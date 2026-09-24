@@ -186,3 +186,25 @@ export function buttonClass(variant: "primary" | "secondary" = "primary") {
     variant === "secondary" && "border border-border bg-surface hover:bg-surface-muted",
   );
 }
+
+export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      className={cx(
+        "min-h-20 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm",
+        "focus:outline-2 focus:outline-offset-0 focus:outline-accent",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function Checkbox({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <label className="inline-flex items-center gap-2 text-sm">
+      <input type="checkbox" className="size-4 accent-[var(--accent)]" {...props} />
+      {label}
+    </label>
+  );
+}

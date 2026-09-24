@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.3.0 · 2026-09-24 · Fase 1, bloque 3: clientes, proveedores y categorías
+
+- Cada sociedad tiene ahora su espacio con pestañas: Datos, Clientes y proveedores, Categorías.
+- Clientes y proveedores: un único registro por tercero (puede ser ambos), NIF español validado o identificador extranjero, IBAN con dígito de control, plazo de cobro/pago, categoría habitual de ingreso y de gasto, notas. Filtro por tipo, buscador por nombre o NIF, archivo.
+- Categorías: plantilla del Plan General Contable (cuenta orientativa y línea de la cuenta de resultados) que se copia a cada sociedad nueva; alta, edición y archivo; dos niveles. Clave estable de plantilla para las reglas automáticas del bloque 6.
+- Integridad reforzada en la base de datos: no se puede enlazar una categoría de otra sociedad aunque se conozca su id.
+- Los desplegables de los formularios conservan lo elegido tras un error.
+- Datos de demostración con categorías y terceros de ejemplo.
+
 ## 0.2.0 · 2026-09-24 · Fase 1, bloque 2: clientes, sociedades y usuarios
 
 - Clientes: alta, edición, archivo y reactivación; paquete, precio pactado (obligatorio en Finance Department) y gestor responsable. Resumen de ingresos mensuales por paquetes.

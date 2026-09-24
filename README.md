@@ -2,24 +2,26 @@
 
 Plataforma multiempresa de administración, contabilidad operativa y control financiero para autónomos y pymes en España. Una firma administradora gestiona desde aquí a todos sus clientes; cada cliente ve solo lo suyo.
 
-> **Estado:** Fase 1 (MVP), bloques 1 y 2 de 9 completados: base multiempresa y seguridad, más gestión de clientes, sociedades y usuarios.
+> **Estado:** Fase 1 (MVP), bloques 1 a 3 de 9 completados: base multiempresa y seguridad; clientes, sociedades y usuarios; clientes/proveedores y categorías de cada sociedad.
 
 ## Qué hay construido
 
-| Pieza                                                         | Estado                                                                                        |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Jerarquía Organización → Cliente → Sociedad                   | Tablas, validación de NIF, archivado en lugar de borrado                                      |
-| Aislamiento entre clientes                                    | Doble cerrojo: filtro en la app + Row-Level Security en PostgreSQL                            |
-| Roles y permisos                                              | 5 roles, matriz única `can()`, ámbito por cliente o por sociedad                              |
-| Paquetes (Esencial, Profesional, Empresa, Finance Department) | Funciones y límites blandos/duros (sin pantalla de administración todavía)                    |
-| Autenticación                                                 | Sin registro público, 2FA obligatorio para el equipo, bloqueo por IP y por cuenta (5 fallos)  |
-| Auditoría                                                     | Automática por trigger: usuario, campos y valores antes/después; inmutable                    |
-| Importes                                                      | Céntimos enteros, redondeo de IVA exacto, lectura de importes en formato español              |
-| Clientes y sociedades                                         | Alta, edición y archivo; paquete y precio pactado; gestor responsable; NIF validado por forma |
-| Usuarios                                                      | Invitar con contraseña temporal, asignar rol por cliente o sociedad, retirar accesos          |
-| Contraseñas                                                   | Cambio obligatorio de la contraseña temporal; cambio voluntario cierra las demás sesiones     |
-| Pantallas                                                     | Login, 2FA, inicio, Clientes, ficha de cliente, sociedad, Usuarios, invitación, contraseña    |
-| CI                                                            | Tipos, lint, formato, 168 tests contra PostgreSQL real y build                                |
+| Pieza                                                         | Estado                                                                                         |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Jerarquía Organización → Cliente → Sociedad                   | Tablas, validación de NIF, archivado en lugar de borrado                                       |
+| Aislamiento entre clientes                                    | Doble cerrojo: filtro en la app + Row-Level Security en PostgreSQL                             |
+| Roles y permisos                                              | 5 roles, matriz única `can()`, ámbito por cliente o por sociedad                               |
+| Paquetes (Esencial, Profesional, Empresa, Finance Department) | Funciones y límites blandos/duros (sin pantalla de administración todavía)                     |
+| Autenticación                                                 | Sin registro público, 2FA obligatorio para el equipo, bloqueo por IP y por cuenta (5 fallos)   |
+| Auditoría                                                     | Automática por trigger: usuario, campos y valores antes/después; inmutable                     |
+| Importes                                                      | Céntimos enteros, redondeo de IVA exacto, lectura de importes en formato español               |
+| Clientes y sociedades                                         | Alta, edición y archivo; paquete y precio pactado; gestor responsable; NIF validado por forma  |
+| Usuarios                                                      | Invitar con contraseña temporal, asignar rol por cliente o sociedad, retirar accesos           |
+| Clientes y proveedores de cada sociedad                       | Un solo registro por tercero (puede ser ambos), NIF español o extranjero, IBAN validado, plazo |
+| Categorías                                                    | Plantilla del Plan General Contable (38 categorías) por sociedad, editable, dos niveles        |
+| Contraseñas                                                   | Cambio obligatorio de la contraseña temporal; cambio voluntario cierra las demás sesiones      |
+| Pantallas                                                     | Login, 2FA, inicio, Clientes, ficha de cliente, sociedad, Usuarios, invitación, contraseña     |
+| CI                                                            | Tipos, lint, formato, 201 tests contra PostgreSQL real y build                                 |
 
 ## Puesta en marcha (desarrollo)
 
@@ -72,6 +74,7 @@ src/
     access/       permisos (can), contexto de acceso, paquetes
     identity/     sesión y alta de usuarios
     tenancy/      organizaciones, clientes, sociedades
+    accounting/   terceros, categorías y plantilla PGC
   db/
     schema/       tablas (Drizzle)
     migrations/   SQL versionado; 0001 contiene RLS y auditoría

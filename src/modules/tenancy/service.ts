@@ -10,6 +10,7 @@ import { withDbContext } from "@/db/tenant";
 import { DomainError, pgConstraint, pgErrorCode } from "@/lib/errors";
 import { validateNif } from "@/lib/nif";
 import { assertCan, toDbContext, type AccessContext } from "@/modules/access/context";
+import { applyCategoryTemplate } from "@/modules/accounting/categories";
 
 // ------------------------------------------------------------------ esquemas
 
@@ -177,6 +178,8 @@ export async function createLegalEntity(
         .insert(legalEntities)
         .values({ ...data, taxId, organizationId: access.orgId, companyId })
         .returning({ id: legalEntities.id });
+      // Cada sociedad nueva nace con la plantilla de categorías PGC.
+      await applyCategoryTemplate(tx, access.orgId, row.id);
       return row.id;
     } catch (e) {
       translateDbError(e);

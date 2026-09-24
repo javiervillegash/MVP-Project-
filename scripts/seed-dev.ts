@@ -12,6 +12,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "../src/db/schema";
+import { applyCategoryTemplate } from "../src/modules/accounting/categories";
 import { createCredentialUser } from "../src/modules/identity/users";
 
 export const DEMO_PASSWORD = "demo-password-2026";
@@ -38,7 +39,7 @@ async function main() {
         ])
         .returning();
 
-      const [alfaSl] = await tx
+      const entities = await tx
         .insert(schema.legalEntities)
         .values([
           {
@@ -64,6 +65,58 @@ async function main() {
           },
         ])
         .returning();
+      const [alfaSl] = entities;
+
+      // Plantilla de categorías PGC en cada sociedad.
+      for (const e of entities) await applyCategoryTemplate(tx, org.id, e.id);
+
+      // Algunos clientes y proveedores de ejemplo en Alfa Servicios SL.
+      const cat = async (key: string) =>
+        (
+          await tx
+            .select({ id: schema.categories.id })
+            .from(schema.categories)
+            .where(sql`legal_entity_id = ${alfaSl.id} and template_key = ${key}`)
+        )[0]?.id;
+      await tx.insert(schema.counterparties).values([
+        {
+          organizationId: org.id,
+          legalEntityId: alfaSl.id,
+          name: "Endesa Energía SAU",
+          taxId: "A81948077",
+          isSupplier: true,
+          paymentTermsDays: 15,
+          defaultExpenseCategoryId: await cat("suministros.electricidad"),
+        },
+        {
+          organizationId: org.id,
+          legalEntityId: alfaSl.id,
+          name: "Inmobiliaria Centro SL",
+          taxId: "B22222228",
+          isSupplier: true,
+          paymentTermsDays: 5,
+          defaultExpenseCategoryId: await cat("alquiler"),
+        },
+        {
+          organizationId: org.id,
+          legalEntityId: alfaSl.id,
+          name: "Construcciones Norte SA",
+          taxId: "A58818501",
+          isCustomer: true,
+          paymentTermsDays: 60,
+          iban: "ES9121000418450200051332",
+          defaultIncomeCategoryId: await cat("ventas.servicios"),
+        },
+        {
+          organizationId: org.id,
+          legalEntityId: alfaSl.id,
+          name: "Hostelería Sur SL",
+          taxId: "B33333337",
+          isCustomer: true,
+          isSupplier: true,
+          paymentTermsDays: 30,
+        },
+      ]);
 
       const users = {
         admin: await createCredentialUser(tx, {

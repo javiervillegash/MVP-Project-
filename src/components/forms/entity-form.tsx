@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Alert, Button, Field, Input, Select } from "@/components/ui/primitives";
 import type { FormState } from "@/lib/action-state";
+import { useFormKey } from "./use-form-key";
 import { LEGAL_FORM_LABELS, MONTH_LABELS, VAT_REGIME_LABELS } from "@/modules/access/labels";
 
 interface Props {
@@ -21,11 +22,12 @@ interface Props {
 
 export function EntityForm({ action, defaults, submitLabel, readOnly }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
+  const formKey = useFormKey(state);
   const fe = state.fieldErrors ?? {};
   const v = state.values;
 
   return (
-    <form action={formAction} className="grid max-w-xl gap-4">
+    <form key={formKey} action={formAction} className="grid max-w-xl gap-4">
       <fieldset disabled={readOnly} className="grid gap-4">
         <Field label="Razón social o nombre completo" htmlFor="legalName" error={fe.legalName}>
           <Input id="legalName" name="legalName" required defaultValue={v?.legalName ?? defaults?.legalName} />

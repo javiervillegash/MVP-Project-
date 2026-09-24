@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { Alert, Button, Card, Field, Input } from "@/components/ui/primitives";
 import type { FormState } from "@/lib/action-state";
+import { useFormKey } from "./use-form-key";
 import type { InviteData } from "@/app/(app)/usuarios/actions";
 import { GrantFields, type ScopeOption } from "./grant-fields";
 
@@ -17,6 +18,7 @@ export function InviteForm({
   defaultScope?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
+  const formKey = useFormKey(state);
   const done = state.ok ? (state.data as InviteData) : null;
 
   if (done) {
@@ -53,7 +55,7 @@ export function InviteForm({
 
   const fe = state.fieldErrors ?? {};
   return (
-    <form action={formAction} className="grid max-w-xl gap-4">
+    <form key={formKey} action={formAction} className="grid max-w-xl gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nombre y apellidos" htmlFor="name" error={fe.name}>
           <Input id="name" name="name" required defaultValue={state.values?.name} />

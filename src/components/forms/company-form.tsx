@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Alert, Button, Field, Input, Select } from "@/components/ui/primitives";
 import type { FormState } from "@/lib/action-state";
+import { useFormKey } from "./use-form-key";
 import { formatEuros, type Cents } from "@/lib/money";
 import { PLANS } from "@/modules/access/entitlements";
 
@@ -22,13 +23,14 @@ const priceText = (c: number | null) => (c ? formatEuros(c as Cents).replace(/\s
 
 export function CompanyForm({ action, staff, defaults, submitLabel }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
+  const formKey = useFormKey(state);
   const [plan, setPlan] = useState(defaults?.plan ?? "esencial");
   const base = PLANS[plan as keyof typeof PLANS];
   const fe = state.fieldErrors ?? {};
   const v = state.values;
 
   return (
-    <form action={formAction} className="grid max-w-xl gap-4">
+    <form key={formKey} action={formAction} className="grid max-w-xl gap-4">
       <Field
         label="Nombre del cliente"
         htmlFor="name"

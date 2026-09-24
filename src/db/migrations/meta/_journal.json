@@ -29,6 +29,20 @@
       "when": 1790261019232,
       "tag": "0003_cambio_contrasena",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790263691800,
+      "tag": "0004_terceros_categorias",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790263693138,
+      "tag": "0005_terceros_categorias_rls",
+      "breakpoints": true
     }
   ]
 }
