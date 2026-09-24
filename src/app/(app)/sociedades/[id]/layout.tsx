@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Tabs } from "@/components/tabs";
 import { Badge, PageHeader } from "@/components/ui/primitives";
 import { isUuid } from "@/lib/ids";
+import { can } from "@/modules/access/context";
 import { LEGAL_FORM_LABELS } from "@/modules/access/labels";
 import { requireAccess } from "@/modules/identity/session";
 import { getLegalEntity } from "@/modules/tenancy/service";
@@ -24,7 +25,7 @@ export default async function EntityLayout({
   const base = `/sociedades/${id}`;
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-7xl">
       <PageHeader
         title={entity.legalName}
         subtitle={
@@ -48,8 +49,15 @@ export default async function EntityLayout({
       <Tabs
         items={[
           { href: base, label: "Datos", exact: true },
+          ...(can(access, "invoice.view", id)
+            ? [
+                { href: `${base}/facturas`, label: "Facturas" },
+                { href: `${base}/apuntes`, label: "Gastos e ingresos" },
+              ]
+            : []),
           { href: `${base}/terceros`, label: "Clientes y proveedores" },
           { href: `${base}/categorias`, label: "Categorías" },
+          ...(can(access, "document.view", id) ? [{ href: `${base}/documentos`, label: "Documentos" }] : []),
         ]}
       />
       {children}

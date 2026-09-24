@@ -27,6 +27,7 @@ export const ENTITY_ACTIONS = [
   "entity.settings",
   "party.write",
   "category.write",
+  "invoice.view",
   "invoice.write",
   "bank.import",
   "reconciliation.write",
@@ -49,6 +50,7 @@ export const ENTITY_PERMISSIONS: Record<Exclude<Role, "org_admin">, readonly Ent
     "entity.settings",
     "party.write",
     "category.write",
+    "invoice.view",
     "invoice.write",
     "bank.import",
     "reconciliation.write",
@@ -60,11 +62,19 @@ export const ENTITY_PERMISSIONS: Record<Exclude<Role, "org_admin">, readonly Ent
     "tax.view",
     "tax.write",
   ],
-  client_director: ["entity.view", "document.upload", "document.view", "report.view", "task.write", "tax.view"],
+  client_director: [
+    "entity.view",
+    "invoice.view",
+    "document.upload",
+    "document.view",
+    "report.view",
+    "task.write",
+    "tax.view",
+  ],
   client_member: ["entity.view", "document.upload", "document.view"],
   // La gestoría solo ve lo que se le comparta (se filtrará por documento en
   // la Fase 2) y registra modelos, fechas e importes comunicados.
-  gestoria: ["entity.view", "document.view", "tax.view", "tax.write"],
+  gestoria: ["entity.view", "invoice.view", "document.view", "tax.view", "tax.write"],
 };
 
 /** Gestor ve el panel de cartera de sus sociedades, aunque no sea admin. */

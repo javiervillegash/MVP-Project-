@@ -21,6 +21,7 @@ export default defineConfig({
       APP_DB_PASSWORD: TEST_APP_PASSWORD,
       BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-123",
       BETTER_AUTH_URL: "http://localhost:3000",
+      STORAGE_DIR: resolve(import.meta.dirname, ".test-storage"),
     },
   },
 });

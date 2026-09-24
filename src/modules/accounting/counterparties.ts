@@ -177,6 +177,8 @@ export async function listCounterparties(
         isSupplier: counterparties.isSupplier,
         email: counterparties.email,
         paymentTermsDays: counterparties.paymentTermsDays,
+        defaultIncomeCategoryId: counterparties.defaultIncomeCategoryId,
+        defaultExpenseCategoryId: counterparties.defaultExpenseCategoryId,
         status: counterparties.status,
       })
       .from(counterparties)

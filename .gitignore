@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# archivos subidos (desarrollo y tests)
+/storage
+/.test-storage

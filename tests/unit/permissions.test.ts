@@ -24,9 +24,17 @@ function ctx(roles: Record<string, Role[]>, isOrgAdmin = false): AccessContext {
  */
 const EXPECTED: Record<Exclude<Role, "org_admin">, string[]> = {
   gestor: [...ENTITY_ACTIONS],
-  client_director: ["entity.view", "document.upload", "document.view", "report.view", "task.write", "tax.view"],
+  client_director: [
+    "entity.view",
+    "invoice.view",
+    "document.upload",
+    "document.view",
+    "report.view",
+    "task.write",
+    "tax.view",
+  ],
   client_member: ["entity.view", "document.upload", "document.view"],
-  gestoria: ["entity.view", "document.view", "tax.view", "tax.write"],
+  gestoria: ["entity.view", "invoice.view", "document.view", "tax.view", "tax.write"],
 };
 
 describe("can()", () => {

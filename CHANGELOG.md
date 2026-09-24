@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.4.0 · 2026-09-24 · Fase 1, bloque 4: facturas, gastos sin factura y documentos
+
+- Facturas emitidas y recibidas (registro, no emisión): líneas con cantidad, precio, categoría, IVA, recargo de equivalencia y retención. El servidor recalcula siempre los importes; las cuotas se calculan sobre la suma de bases de cada tipo.
+- Totales en vivo en el formulario; vencimiento propuesto según el plazo del tercero; categoría habitual del proveedor o cliente; siguiente número de la serie.
+- Aviso cuando el total que indica el documento no cuadra con las líneas.
+- Números únicos: por serie en emitidas, por proveedor en recibidas. Rectificativas (abonos) con importe negativo.
+- Estados: pendiente y vencida (según vencimiento), incobrable y anulada (con motivo). «Cobrada» llegará con la conciliación bancaria (bloque 6).
+- Gastos e ingresos sin factura con categoría, tercero opcional, IVA deducible y forma de pago.
+- Documentos: subida por carpetas, detección del tipo real (PDF, imagen, XML), máx. 15 MB, sin duplicados (huella SHA-256), enlazables a facturas y apuntes, descarga solo con sesión y permiso, comprobación de integridad al descargar.
+- Nuevo permiso «ver facturas»: gestor, director y gestoría; el colaborador solo sube documentos.
+- Datos de demostración con facturas y un apunte.
+
 ## 0.3.0 · 2026-09-24 · Fase 1, bloque 3: clientes, proveedores y categorías
 
 - Cada sociedad tiene ahora su espacio con pestañas: Datos, Clientes y proveedores, Categorías.

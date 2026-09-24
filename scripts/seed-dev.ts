@@ -14,6 +14,7 @@ import { Pool } from "pg";
 import * as schema from "../src/db/schema";
 import { applyCategoryTemplate } from "../src/modules/accounting/categories";
 import { createCredentialUser } from "../src/modules/identity/users";
+import { computeTotals, type LineInput } from "../src/modules/invoicing/calc";
 
 export const DEMO_PASSWORD = "demo-password-2026";
 
@@ -78,45 +79,142 @@ async function main() {
             .from(schema.categories)
             .where(sql`legal_entity_id = ${alfaSl.id} and template_key = ${key}`)
         )[0]?.id;
-      await tx.insert(schema.counterparties).values([
+      const parties = await tx
+        .insert(schema.counterparties)
+        .values([
+          {
+            organizationId: org.id,
+            legalEntityId: alfaSl.id,
+            name: "Endesa Energía SAU",
+            taxId: "A81948077",
+            isSupplier: true,
+            paymentTermsDays: 15,
+            defaultExpenseCategoryId: await cat("suministros.electricidad"),
+          },
+          {
+            organizationId: org.id,
+            legalEntityId: alfaSl.id,
+            name: "Inmobiliaria Centro SL",
+            taxId: "B22222228",
+            isSupplier: true,
+            paymentTermsDays: 5,
+            defaultExpenseCategoryId: await cat("alquiler"),
+          },
+          {
+            organizationId: org.id,
+            legalEntityId: alfaSl.id,
+            name: "Construcciones Norte SA",
+            taxId: "A58818501",
+            isCustomer: true,
+            paymentTermsDays: 60,
+            iban: "ES9121000418450200051332",
+            defaultIncomeCategoryId: await cat("ventas.servicios"),
+          },
+          {
+            organizationId: org.id,
+            legalEntityId: alfaSl.id,
+            name: "Hostelería Sur SL",
+            taxId: "B33333337",
+            isCustomer: true,
+            isSupplier: true,
+            paymentTermsDays: 30,
+          },
+        ])
+        .returning();
+      const [endesa, inmobiliaria, norte] = parties;
+
+      // Facturas de ejemplo (septiembre 2026).
+      const addInvoice = async (
+        direction: "issued" | "received",
+        counterpartyId: string,
+        number: string,
+        issueDate: string,
+        dueDate: string,
+        lines: (LineInput & { description: string; categoryKey: string })[],
+      ) => {
+        const t = computeTotals(lines);
+        const [inv] = await tx
+          .insert(schema.invoices)
+          .values({
+            organizationId: org.id,
+            legalEntityId: alfaSl.id,
+            direction,
+            counterpartyId,
+            series: direction === "issued" ? "F" : null,
+            number,
+            issueDate,
+            dueDate,
+            baseCents: t.baseCents,
+            vatCents: t.vatCents,
+            surchargeCents: t.surchargeCents,
+            withholdingCents: t.withholdingCents,
+            totalCents: t.totalCents,
+          })
+          .returning();
+        for (const [i, l] of lines.entries()) {
+          await tx.insert(schema.invoiceLines).values({
+            organizationId: org.id,
+            legalEntityId: alfaSl.id,
+            invoiceId: inv.id,
+            position: i + 1,
+            description: l.description,
+            quantityMilli: l.quantityMilli,
+            unitPriceCents: l.unitPriceCents,
+            baseCents: t.lineBases[i],
+            vatRateBp: l.vatRateBp,
+            surchargeRateBp: l.surchargeRateBp ?? 0,
+            withholdingRateBp: l.withholdingRateBp ?? 0,
+            categoryId: await cat(l.categoryKey),
+          });
+        }
+      };
+      await addInvoice("issued", norte.id, "2026-014", "2026-09-02", "2026-11-01", [
         {
-          organizationId: org.id,
-          legalEntityId: alfaSl.id,
-          name: "Endesa Energía SAU",
-          taxId: "A81948077",
-          isSupplier: true,
-          paymentTermsDays: 15,
-          defaultExpenseCategoryId: await cat("suministros.electricidad"),
-        },
-        {
-          organizationId: org.id,
-          legalEntityId: alfaSl.id,
-          name: "Inmobiliaria Centro SL",
-          taxId: "B22222228",
-          isSupplier: true,
-          paymentTermsDays: 5,
-          defaultExpenseCategoryId: await cat("alquiler"),
-        },
-        {
-          organizationId: org.id,
-          legalEntityId: alfaSl.id,
-          name: "Construcciones Norte SA",
-          taxId: "A58818501",
-          isCustomer: true,
-          paymentTermsDays: 60,
-          iban: "ES9121000418450200051332",
-          defaultIncomeCategoryId: await cat("ventas.servicios"),
-        },
-        {
-          organizationId: org.id,
-          legalEntityId: alfaSl.id,
-          name: "Hostelería Sur SL",
-          taxId: "B33333337",
-          isCustomer: true,
-          isSupplier: true,
-          paymentTermsDays: 30,
+          description: "Dirección de obra – septiembre",
+          quantityMilli: 1000,
+          unitPriceCents: 450000,
+          vatRateBp: 2100,
+          categoryKey: "ventas.servicios",
         },
       ]);
+      await addInvoice("issued", norte.id, "2026-011", "2026-07-15", "2026-08-14", [
+        {
+          description: "Estudio de viabilidad",
+          quantityMilli: 1000,
+          unitPriceCents: 180000,
+          vatRateBp: 2100,
+          categoryKey: "ventas.servicios",
+        },
+      ]);
+      await addInvoice("received", endesa.id, "PMS601N0012345", "2026-09-05", "2026-09-20", [
+        {
+          description: "Electricidad agosto",
+          quantityMilli: 1000,
+          unitPriceCents: 21430,
+          vatRateBp: 2100,
+          categoryKey: "suministros.electricidad",
+        },
+      ]);
+      await addInvoice("received", inmobiliaria.id, "A-0926", "2026-09-01", "2026-09-05", [
+        {
+          description: "Alquiler oficina septiembre",
+          quantityMilli: 1000,
+          unitPriceCents: 120000,
+          vatRateBp: 2100,
+          withholdingRateBp: 1900,
+          categoryKey: "alquiler",
+        },
+      ]);
+      await tx.insert(schema.manualEntries).values({
+        organizationId: org.id,
+        legalEntityId: alfaSl.id,
+        kind: "expense",
+        entryDate: "2026-09-10",
+        description: "Comisión mantenimiento cuenta",
+        categoryId: (await cat("otros.bancarios"))!,
+        amountCents: 1500,
+        paymentMethod: "direct_debit",
+      });
 
       const users = {
         admin: await createCredentialUser(tx, {
