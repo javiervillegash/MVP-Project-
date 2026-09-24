@@ -10,6 +10,8 @@ export interface NewUser {
   email: string;
   name: string;
   password: string;
+  /** true si la contraseña la ha visto otra persona (invitaciones, alta inicial). */
+  mustChangePassword?: boolean;
 }
 
 /**
@@ -25,7 +27,13 @@ export async function createCredentialUser(tx: AnyTx, input: NewUser): Promise<s
   if (existing.length > 0) throw new Error(`Ya existe un usuario con el email ${email}`);
 
   const id = crypto.randomUUID();
-  await tx.insert(authUser).values({ id, email, name: input.name.trim(), emailVerified: true });
+  await tx.insert(authUser).values({
+    id,
+    email,
+    name: input.name.trim(),
+    emailVerified: true,
+    mustChangePassword: input.mustChangePassword ?? false,
+  });
   await tx.insert(authAccount).values({
     id: crypto.randomUUID(),
     userId: id,

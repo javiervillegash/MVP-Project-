@@ -12,6 +12,8 @@ export const authUser = pgTable("auth_user", {
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
+  /** Contraseña temporal (vista por el Administrador): se exige cambiarla al entrar. */
+  mustChangePassword: boolean("must_change_password").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -85,4 +87,16 @@ export const authRateLimit = pgTable("auth_rate_limit", {
   key: text("key").notNull().unique(),
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
+
+/**
+ * Bloqueo por cuenta: 5 contraseñas incorrectas seguidas para el mismo email
+ * bloquean ese email 15 minutos, venga de la IP que venga. Complementa el
+ * límite por IP de Better Auth (ver lib/auth.ts).
+ */
+export const authLoginLockout = pgTable("auth_login_lockout", {
+  email: text("email").primaryKey(),
+  failedCount: integer("failed_count").notNull().default(0),
+  firstFailedAt: timestamp("first_failed_at", { withTimezone: true }).notNull().defaultNow(),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
 });

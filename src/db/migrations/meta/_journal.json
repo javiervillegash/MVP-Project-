@@ -15,6 +15,20 @@
       "when": 1790257639965,
       "tag": "0001_rls_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790260149070,
+      "tag": "0002_planes_y_bloqueo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790261019232,
+      "tag": "0003_cambio_contrasena",
+      "breakpoints": true
     }
   ]
 }

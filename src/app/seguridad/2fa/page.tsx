@@ -16,9 +16,14 @@ export default async function SecurityTwoFactorPage() {
         title="Verificación en dos pasos activa"
         subtitle="Tu cuenta pide un código de tu móvil al iniciar sesión."
       >
-        <Link href="/" className="text-sm font-medium text-accent underline">
-          Volver al inicio
-        </Link>
+        <div className="flex gap-4 text-sm">
+          <Link href="/" className="font-medium text-accent underline">
+            Volver al inicio
+          </Link>
+          <Link href="/seguridad/contrasena" className="text-muted underline">
+            Cambiar contraseña
+          </Link>
+        </div>
       </AuthShell>
     );
   }

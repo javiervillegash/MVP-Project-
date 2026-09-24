@@ -43,6 +43,7 @@ async function main() {
         email: values.email!,
         name: values.name!,
         password,
+        mustChangePassword: true,
       });
       await tx.insert(schema.memberships).values({ organizationId: org.id, userId, role: "org_admin" });
       return { orgId: org.id, userId };

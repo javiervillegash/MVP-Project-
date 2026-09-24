@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins/two-factor";
 import { getDb } from "@/db/client";
+import { clearFailures, lockedUntil, recordFailure } from "@/modules/identity/lockout";
 import { authAccount, authRateLimit, authSession, authTwoFactor, authUser, authVerification } from "@/db/schema";
 
 export const APP_NAME = "Plataforma Financiera";
@@ -21,6 +23,11 @@ function createAuth() {
         rateLimit: authRateLimit,
       },
     }),
+    user: {
+      additionalFields: {
+        mustChangePassword: { type: "boolean", defaultValue: false, input: false },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       // Sin registro público: los usuarios los da de alta un Administrador.
@@ -47,6 +54,30 @@ function createAuth() {
     advanced: {
       useSecureCookies: process.env.NODE_ENV === "production",
       database: { generateId: () => crypto.randomUUID() },
+    },
+    hooks: {
+      // Bloqueo por cuenta, además del límite por IP.
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-in/email") return;
+        const email = String(ctx.body?.email ?? "");
+        if (email && (await lockedUntil(getDb(), email))) {
+          throw new APIError("TOO_MANY_REQUESTS", {
+            code: "ACCOUNT_LOCKED",
+            message: "Cuenta bloqueada temporalmente por intentos fallidos",
+          });
+        }
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-in/email") return;
+        const email = String(ctx.body?.email ?? "");
+        if (!email) return;
+        const returned = ctx.context.returned;
+        if (isAPIError(returned)) {
+          if (returned.statusCode === 401) await recordFailure(getDb(), email);
+        } else {
+          await clearFailures(getDb(), email);
+        }
+      }),
     },
     plugins: [twoFactor({ issuer: APP_NAME }), nextCookies()],
   });

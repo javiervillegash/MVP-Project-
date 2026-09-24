@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { NavLinks } from "@/components/nav-links";
 import { SignOutButton } from "@/components/sign-out-button";
+import { can } from "@/modules/access/context";
 import { ROLE_LABELS } from "@/modules/access/labels";
 import { requireAccess } from "@/modules/identity/session";
 
@@ -15,6 +16,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? ROLE_LABELS.org_admin
     : [...new Set([...access.entityRoles.values()].flat())].map((r) => ROLE_LABELS[r]).join(" · ");
 
+  const nav = [
+    { href: "/", label: "Inicio" },
+    ...(can(access, "company.create") ? [{ href: "/clientes", label: "Clientes" }] : []),
+    ...(can(access, "org.users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
+    { href: "/seguridad/2fa", label: "Seguridad" },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="flex shrink-0 flex-col border-b border-border bg-surface md:w-60 md:border-b-0 md:border-r">
@@ -24,17 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             {access.orgName}
           </p>
         </div>
-        <nav className="flex gap-1 px-3 md:flex-col" aria-label="Principal">
-          <Link href="/" className="rounded-md px-3 py-2 text-sm font-medium hover:bg-surface-muted">
-            Inicio
-          </Link>
-          <Link
-            href="/seguridad/2fa"
-            className="rounded-md px-3 py-2 text-sm text-muted hover:bg-surface-muted hover:text-text"
-          >
-            Seguridad
-          </Link>
-        </nav>
+        <NavLinks items={nav} />
         <div className="mt-auto hidden border-t border-border p-4 md:block">
           <p className="truncate text-sm font-medium">{user.name}</p>
           <p className="truncate text-xs text-muted">{roleLabel || user.email}</p>

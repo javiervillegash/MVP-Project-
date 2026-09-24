@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Card } from "@/components/ui/primitives";
 import { LEGAL_FORM_LABELS, ROLE_LABELS } from "@/modules/access/labels";
 import { requireAccess } from "@/modules/identity/session";
@@ -34,7 +35,11 @@ export default async function HomePage() {
             <tbody>
               {entities.map((e) => (
                 <tr key={e.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 font-medium">{e.legalName}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link href={`/sociedades/${e.id}`} className="hover:underline">
+                      {e.legalName}
+                    </Link>
+                  </td>
                   <td className="num px-4 py-3">{e.taxId}</td>
                   <td className="px-4 py-3">{LEGAL_FORM_LABELS[e.legalForm] ?? e.legalForm}</td>
                   <td className="px-4 py-3 text-muted">{e.companyName}</td>

@@ -12,6 +12,7 @@ export interface CurrentUser {
   name: string;
   email: string;
   twoFactorEnabled: boolean;
+  mustChangePassword: boolean;
 }
 
 /** Sesión + acceso de la petición actual (memorizado por petición). */
@@ -23,6 +24,7 @@ export const getCurrent = cache(async () => {
     name: session.user.name,
     email: session.user.email,
     twoFactorEnabled: !!session.user.twoFactorEnabled,
+    mustChangePassword: !!session.user.mustChangePassword,
   };
   const preferredOrg = (await cookies()).get(ORG_COOKIE)?.value;
   const access = await resolveAccess(user.id, preferredOrg);
@@ -36,6 +38,7 @@ export const getCurrent = cache(async () => {
 export async function requireAccess(): Promise<{ user: CurrentUser; access: AccessContext }> {
   const current = await getCurrent();
   if (!current) redirect("/login");
+  if (current.user.mustChangePassword) redirect("/seguridad/contrasena");
   if (!current.access) redirect("/sin-acceso");
   if (current.access.requiresTwoFactor && !current.user.twoFactorEnabled) {
     redirect("/seguridad/2fa");
@@ -43,7 +46,7 @@ export async function requireAccess(): Promise<{ user: CurrentUser; access: Acce
   return { user: current.user, access: current.access };
 }
 
-/** Solo exige sesión (para la propia pantalla de activar 2FA). */
+/** Solo exige sesión (pantallas de seguridad: contraseña y 2FA). */
 export async function requireSession(): Promise<{ user: CurrentUser; access: AccessContext | null }> {
   const current = await getCurrent();
   if (!current) redirect("/login");

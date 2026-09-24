@@ -2,21 +2,24 @@
 
 Plataforma multiempresa de administración, contabilidad operativa y control financiero para autónomos y pymes en España. Una firma administradora gestiona desde aquí a todos sus clientes; cada cliente ve solo lo suyo.
 
-> **Estado:** Fase 1 (MVP), bloque 1 de 9 completado: base del proyecto, aislamiento multiempresa, autenticación con 2FA, permisos y auditoría.
+> **Estado:** Fase 1 (MVP), bloques 1 y 2 de 9 completados: base multiempresa y seguridad, más gestión de clientes, sociedades y usuarios.
 
 ## Qué hay construido
 
-| Pieza                                                         | Estado                                                                                           |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Jerarquía Organización → Cliente → Sociedad                   | Tablas, validación de NIF, archivado en lugar de borrado                                         |
-| Aislamiento entre clientes                                    | Doble cerrojo: filtro en la app + Row-Level Security en PostgreSQL                               |
-| Roles y permisos                                              | 5 roles, matriz única `can()`, ámbito por cliente o por sociedad                                 |
-| Paquetes (Esencial, Profesional, Empresa, Finance Department) | Funciones y límites blandos/duros (sin pantalla de administración todavía)                       |
-| Autenticación                                                 | Email + contraseña, sin registro público, 2FA obligatorio para el equipo, 5 intentos cada 15 min |
-| Auditoría                                                     | Automática por trigger: usuario, campos y valores antes/después; inmutable                       |
-| Importes                                                      | Céntimos enteros, redondeo de IVA exacto, lectura de importes en formato español                 |
-| Pantallas                                                     | Login, verificación 2FA, activación 2FA, inicio con las sociedades visibles                      |
-| CI                                                            | Tipos, lint, formato, 143 tests contra PostgreSQL real y build                                   |
+| Pieza                                                         | Estado                                                                                        |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Jerarquía Organización → Cliente → Sociedad                   | Tablas, validación de NIF, archivado en lugar de borrado                                      |
+| Aislamiento entre clientes                                    | Doble cerrojo: filtro en la app + Row-Level Security en PostgreSQL                            |
+| Roles y permisos                                              | 5 roles, matriz única `can()`, ámbito por cliente o por sociedad                              |
+| Paquetes (Esencial, Profesional, Empresa, Finance Department) | Funciones y límites blandos/duros (sin pantalla de administración todavía)                    |
+| Autenticación                                                 | Sin registro público, 2FA obligatorio para el equipo, bloqueo por IP y por cuenta (5 fallos)  |
+| Auditoría                                                     | Automática por trigger: usuario, campos y valores antes/después; inmutable                    |
+| Importes                                                      | Céntimos enteros, redondeo de IVA exacto, lectura de importes en formato español              |
+| Clientes y sociedades                                         | Alta, edición y archivo; paquete y precio pactado; gestor responsable; NIF validado por forma |
+| Usuarios                                                      | Invitar con contraseña temporal, asignar rol por cliente o sociedad, retirar accesos          |
+| Contraseñas                                                   | Cambio obligatorio de la contraseña temporal; cambio voluntario cierra las demás sesiones     |
+| Pantallas                                                     | Login, 2FA, inicio, Clientes, ficha de cliente, sociedad, Usuarios, invitación, contraseña    |
+| CI                                                            | Tipos, lint, formato, 168 tests contra PostgreSQL real y build                                |
 
 ## Puesta en marcha (desarrollo)
 
@@ -93,4 +96,5 @@ docs/decisiones/  decisiones de arquitectura (ADR)
 - Cada transacción fija su contexto (`app.user_id`, `app.org_id`, sociedades visibles) con `set_config(..., true)`, que caduca al terminar la transacción.
 - Un cambio en datos críticos sin usuario responsable se rechaza en la propia base de datos.
 - En PostgreSQL los roles son de todo el servidor: desarrollo y test comparten la contraseña de `finanzas_app`.
-- Pendiente (bloque 2): bloqueo por cuenta además de por IP. Hoy el límite de 5 intentos se aplica por IP, así que en una oficina con una sola IP pública afecta a todos.
+- Bloqueo doble: 5 contraseñas incorrectas para un mismo email bloquean esa cuenta 15 minutos (también si el email no existe, para no revelar qué cuentas hay), y el límite por IP frena ataques masivos.
+- Las contraseñas temporales (invitaciones y alta inicial) obligan a elegir una nueva en el primer acceso.

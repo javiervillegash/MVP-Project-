@@ -10,6 +10,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   bigserial,
   check,
   char,
@@ -49,6 +50,8 @@ export const vatRegime = pgEnum("vat_regime", [
 
 export const filingFrequency = pgEnum("filing_frequency", ["trimestral", "mensual"]);
 
+export const planCode = pgEnum("plan_code", ["esencial", "profesional", "empresa", "finance_department"]);
+
 export const memberRole = pgEnum("member_role", [
   "org_admin",
   "gestor",
@@ -81,6 +84,10 @@ export const companies = pgTable(
     status: recordStatus("status").notNull().default("active"),
     /** Gestor responsable del cliente (informativo; el acceso lo da Membership). */
     managerUserId: text("manager_user_id").references(() => authUser.id),
+    /** Paquete contratado (ver modules/access/entitlements.ts). */
+    plan: planCode("plan").notNull().default("esencial"),
+    /** Precio pactado en céntimos; nulo = precio base del paquete. Obligatorio en Finance Department. */
+    customMonthlyPriceCents: bigint("custom_monthly_price_cents", { mode: "number" }),
     ...timestamps,
   },
   (t) => [index("companies_org_idx").on(t.organizationId)],
