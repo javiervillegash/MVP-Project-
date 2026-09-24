@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de diseño: sobrio, un solo acento, cifras tabulares.
+ * Modo oscuro automático según el sistema.
+ */
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-muted: #f1f1ee;
+  --border: #e4e4df;
+  --text: #1b1d1f;
+  --text-muted: #62666b;
+  --accent: #1f4e79;
+  --accent-contrast: #ffffff;
+  --danger: #b42318;
+  --success: #1e7a46;
+  --warning: #9a6700;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111315;
+    --surface: #181b1e;
+    --surface-muted: #1f2327;
+    --border: #2c3136;
+    --text: #e8eaec;
+    --text-muted: #9aa1a8;
+    --accent: #7fb0e0;
+    --accent-contrast: #0d1b28;
+    --danger: #f97066;
+    --success: #6cc690;
+    --warning: #e5b454;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Importes siempre alineados en columnas. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
